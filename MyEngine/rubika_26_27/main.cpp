@@ -6,6 +6,7 @@
 #include <Profiler.h>
 #include <Logger.h>
 #include <DebugMgr.h>
+#include "SceneMgr.h"
 
 int main()
 {
@@ -21,6 +22,10 @@ int main()
 
     sf::Clock clock;
     clock.restart();
+
+    SceneMgr sceneManager;
+    std::string first = "oui";
+    sceneManager.AddScene(first);
 
     while (window.isOpen())
     {

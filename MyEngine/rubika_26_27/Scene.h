@@ -16,9 +16,10 @@ public:
 	Scene(const std::string& name);
 	~Scene();
 
-	virtual void Start();
+
+	virtual void OpenScene();
 	virtual void Update(float fDeltaTime);
-	virtual void Destroy();
+	virtual void CloseScene();
 
 	void AddEntity(Entity* entity);
 	void RemoveEntity(Entity* entity);
