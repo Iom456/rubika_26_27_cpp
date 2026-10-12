@@ -2,6 +2,7 @@
 
 Scene::Scene(const std::string& name)
 {
+	Name = name;
 }
 
 Scene::~Scene()
@@ -12,25 +13,25 @@ Scene::~Scene()
 
 void Scene::Update(float fDeltaTime)
 {
-	for (Entity* entity : entities)
+	for (Entity* entity : Entities)
 	{
 		entity->Update(fDeltaTime);
 	}
 }
 
 
-void Scene::AddEntity(Entity* entity)
+void Scene::AddEntity(std::string name)
 {
-	entities.push_back(entity);
+	Entities.push_back(new Entity(name));
 }
 
 void Scene::RemoveEntity(Entity* entity)
 {
-	entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
+	Entities.erase(std::remove(Entities.begin(), Entities.end(), entity), Entities.end());
 }
 
 void Scene::OpenScene() {
-	for (Entity* entity : entities)
+	for (Entity* entity : Entities)
 	{
 		entity->Start();
 	}
@@ -38,16 +39,16 @@ void Scene::OpenScene() {
 }
 
 void Scene::CloseScene() {
-	for (Entity* entity : entities)
+	for (Entity* entity : Entities)
 	{
 		entity->Destroy();
 	}
-	entities.clear();
+	Entities.clear();
 }
 
 void Scene::Draw(sf::RenderWindow& window) const
 {
-	for (const Entity* entity : entities)
+	for (const Entity* entity : Entities)
 	{
 		entity->Draw(window);
 	}

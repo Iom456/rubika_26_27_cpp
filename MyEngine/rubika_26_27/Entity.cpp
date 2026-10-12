@@ -2,6 +2,7 @@
 
 Entity::Entity(std::string friendlyName)
 {
+	Name = friendlyName;
 }
 
 Entity::~Entity()

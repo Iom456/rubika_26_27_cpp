@@ -12,6 +12,7 @@ class Entity
 {
 public:
 	Entity(std::string friendlyName = "");
+	
 	virtual ~Entity();
 
 	virtual void Start();
@@ -23,6 +24,8 @@ public:
 	 * Function that will be called each frame to draw the entity
 	*/
 	void Draw(sf::RenderWindow& window) const;
+	
 	TransformComponent Transform;
-
+	std::string Name;
+	
 };

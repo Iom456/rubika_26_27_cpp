@@ -22,11 +22,11 @@ int main()
 
     sf::Clock clock;
     clock.restart();
-
-    SceneMgr sceneManager;
-    std::string first = "oui";
-    sceneManager.AddScene(first);
-
+    
+    SceneMgr scene_mgr;
+    scene_mgr.Initialize();
+    scene_mgr.AddScene("TestScene");
+    
     while (window.isOpen())
     {
         gData.IncrementFrameCount();
@@ -39,7 +39,7 @@ int main()
         sf::Time imGuiTime = clock.restart();
 
         PROFILER_EVENT_BEGIN(PROFILER_COLOR_BLUE, "Event & Input");
-
+        
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
@@ -49,6 +49,7 @@ int main()
 
 #ifdef _USE_IMGUI
             ImGui::SFML::ProcessEvent(window, event.value());
+            //scene_mgr.DrawDebug();
 #endif
         }
 
@@ -57,6 +58,9 @@ int main()
         PROFILER_EVENT_BEGIN(PROFILER_COLOR_RED, "Update");
 #ifdef _USE_IMGUI
         ImGui::SFML::Update(window, imGuiTime);
+        
+       
+        
 #endif
 
         // sample
@@ -81,6 +85,7 @@ int main()
 
     ImGui::SFML::Shutdown();
 
+    scene_mgr.Shut();
     gData.Shut();
     gData.Destroy();
 

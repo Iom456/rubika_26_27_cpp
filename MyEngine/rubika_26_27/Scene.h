@@ -16,12 +16,11 @@ public:
 	Scene(const std::string& name);
 	~Scene();
 
-
 	virtual void OpenScene();
 	virtual void Update(float fDeltaTime);
 	virtual void CloseScene();
 
-	void AddEntity(Entity* entity);
+	void AddEntity(std::string name);
 	void RemoveEntity(Entity* entity);
 
 	/*
@@ -29,8 +28,7 @@ public:
 	 * Function that will be called each frame to draw the entity
 	*/
 	void Draw(sf::RenderWindow& window) const;
-
-private:
-	std::vector<Entity*> entities;
-
+	std::string Name;
+	std::vector<Entity*> Entities;
+	
 };
