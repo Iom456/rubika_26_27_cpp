@@ -1,9 +1,11 @@
 #pragma once
 
 #include <SFML/Graphics/Texture.hpp>
+#include "DebugMgr.h"
 
 #include <filesystem>
 #include <string>
+#include <map>
 
 struct AnimationData
 {
@@ -31,32 +33,36 @@ struct StaticTileData
 
 struct TextureData
 {
-	TextureData();
-	~TextureData();
+	TextureData() {};
+	~TextureData() {};
+
+	void Draw();
 
 	sf::Texture Texture;
+	std::string name;
+	std::filesystem::path file;
+
+	AnimationData animData;
+	StaticTileData tileData;
+	
 	// Container of AnimationData AnimationsData;
 	// Container of StaticTileData StaticTilesData;
 
 	friend class TextureMgr;
 };
 
-class TextureMgr final
+class TextureMgr final : public IDebugable
 {
 public:
 	void Init();
 	void Shut();
 
-	/*
-	 * Loads the texture using the given path, including its metadata.
-	 * Obviously, this function will also store the loaded data
-	 * If errors occur during the loading process, this function must return false.
-	 * Return true otherwise.
-	*/
-	bool LoadTexture(const std::filesystem::path& path);
-
-	/*
-	 * Returns the corresponding TextureData using the name of the texture. Returns the default TextureData in case of an unknown name
-	 */
+	void DrawDebug() override;
+	bool LoadTexture(const std::filesystem::path& path, std::string textType);
 	const TextureData& GetTextureData(const std::string& name) const;
+
+private:
+	bool IsValid(const std::filesystem::path& path);
+
+	std::map<std::string, TextureData> textures;
 };

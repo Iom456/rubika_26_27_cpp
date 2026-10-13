@@ -2,10 +2,12 @@
 #include <Imgui/imgui.h>
 #include <Imgui/imgui-SFML.h>
 
+
 #include <Globals.h>
 #include <Profiler.h>
 #include <Logger.h>
 #include <DebugMgr.h>
+#include <TextureMgr.h>
 #include "SceneMgr.h"
 
 int main()
@@ -16,12 +18,18 @@ int main()
 
     ImGui::SFML::Init(window);
 
-    Logger::Info("This is an info message. That is useful");
+   /* Logger::Info("This is an info message. That is useful");
     Logger::Warning("This is a warning message. Should I worry?");
-    Logger::Error("This is an error message. Oh sh*t!!");
+    Logger::Error("This is an error message. Oh sh*t!!");*/
 
     sf::Clock clock;
     clock.restart();
+
+    if (gData.TextureManager->LoadTexture("D:/Fork/rubika_26_27_cpp_forked/MyEngine/Ressources/Antonio_Belpaese.xml", "Animations"));
+    {
+        Logger::Info("Have load texture");
+    }
+   
     
     SceneMgr scene_mgr;
     scene_mgr.Initialize();
