@@ -44,7 +44,6 @@ bool TextureMgr::LoadTexture(const std::filesystem::path& path, std::string text
 		return false;
 	}
 
-    //on place tout le fichier dans une seule stream afin de pouvoir le traiter
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 
