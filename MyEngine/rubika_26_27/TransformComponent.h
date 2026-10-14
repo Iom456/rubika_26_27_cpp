@@ -1,10 +1,13 @@
 #pragma once
-
+#include "Component.h"
 #include <SFML/Graphics/Transform.hpp>
 
-class TransformComponent
+class TransformComponent /*: public IComponent*/
 {
 public:
+
+	Entity& ParentEntity;
+
 	struct DecomposedData
 	{
 		sf::Vector2f Position;
@@ -12,7 +15,7 @@ public:
 		sf::Vector2f Scale;
 	};
 
-	TransformComponent();
+	TransformComponent(Entity* parent);
 	~TransformComponent();
 
 
