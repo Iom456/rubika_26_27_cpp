@@ -25,16 +25,26 @@ int main()
     sf::Clock clock;
     clock.restart();
 
-    if (gData.TextureManager->LoadTexture("D:/Fork/rubika_26_27_cpp_forked/MyEngine/Ressources/Antonio_Belpaese.xml", "Animations"));
-    {
-        Logger::Info("Have load texture");
-    }
    
-    
+
     SceneMgr scene_mgr;
     scene_mgr.Initialize();
     scene_mgr.AddScene("TestScene");
     
+    if (gData.TextureManager->LoadTexture("D:/Fork/rubika_26_27_cpp_forked/MyEngine/Ressources/Antonio_Belpaese.xml", "Animations"))
+    {
+        Logger::Info("Have load texture");
+    }
+
+    if (gData.TextureManager->LoadTexture("D:/Fork/rubika_26_27_cpp_forked/MyEngine/Ressources/enemy_texture_2.xml", "Animations"))
+    {
+        Logger::Info("Have load texture");
+    }
+    if (gData.TextureManager->LoadTexture("D:/Fork/rubika_26_27_cpp_forked/MyEngine/Ressources/Basement.xml", "Backgrounds"))
+    {
+        Logger::Info("Have load texture");
+    }
+
     while (window.isOpen())
     {
         gData.IncrementFrameCount();
@@ -80,7 +90,6 @@ int main()
 
         PROFILER_EVENT_BEGIN(PROFILER_COLOR_GREEN, "Draw");
         window.clear();
-
 #ifdef _USE_IMGUI
         ImGui::SFML::Render(window);
 #endif

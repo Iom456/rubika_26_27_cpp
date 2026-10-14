@@ -21,13 +21,28 @@ void TextureMgr::Shut() {
 
 void TextureMgr::DrawDebug()
 {
-    for (auto& text : textures) {
-        ImGui::PushID(text.first.c_str());
-        if (ImGui::TreeNode(text.first.c_str())) {
-            ImGui::Image(text.second.Texture);
-        }
-        ImGui::PopID();
-    }
+	for (auto& [name, data] : textures)
+	{
+		ImGui::PushID(name.c_str());
+		if (ImGui::TreeNode(name.c_str()))
+		{
+			const AnimationData& a = data.animData;
+
+			ImGui::Text("File : %s", data.file.string().c_str());
+			ImGui::Text("Rect : (%d, %d) %dx%d", a.StartX, a.StartY, a.SizeX, a.SizeY);
+			ImGui::Text("Sprites : %d (par ligne : %d) | %.2fs | inverse : %s",
+				a.AnimationSpriteCount, a.SpriteOnLine,
+				a.TimeBetweenAnimationInS, a.IsReverted ? "oui" : "non");
+
+			if (data.sprite)
+			{
+				ImGui::Image(*data.sprite, sf::Vector2f(a.SizeX * 4.f, a.SizeY * 4.f));
+			}
+
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
 }
 
 bool TextureMgr::LoadTexture(const std::filesystem::path& path, std::string textType) {
@@ -35,7 +50,10 @@ bool TextureMgr::LoadTexture(const std::filesystem::path& path, std::string text
 	if (!IsValid(path)) {
 		Logger::Error("the gived path is not valid");
 		return false;
-	}
+    }
+    else {
+        Logger::Info("The path is valid");
+    }
 
 	std::ifstream file(path);
 
@@ -43,6 +61,9 @@ bool TextureMgr::LoadTexture(const std::filesystem::path& path, std::string text
 		Logger::Error("Can't open the metadata file");
 		return false;
 	}
+    else {
+        Logger::Info("The metadata is opened");
+    }
 
 	std::stringstream buffer;
 	buffer << file.rdbuf();
@@ -51,6 +72,9 @@ bool TextureMgr::LoadTexture(const std::filesystem::path& path, std::string text
 		Logger::Error("Failed to read the file");
 		return false;
 	}
+    else {
+        Logger::Info("The file can be readed");
+    }
 
 	std::string content = buffer.str();
 
@@ -58,12 +82,16 @@ bool TextureMgr::LoadTexture(const std::filesystem::path& path, std::string text
 		Logger::Error("The metadata file is empty");
 		return false;
 	}
+    else {
+        Logger::Info("The metadata is not empty");
+    }
 
 	rapidxml::xml_document<> doc;
 
 	try
 	{
 		doc.parse<0>(&content[0]);
+        Logger::Info("Try parse the xml");
 	}
 	catch (const rapidxml::parse_error&)
 	{
@@ -73,80 +101,127 @@ bool TextureMgr::LoadTexture(const std::filesystem::path& path, std::string text
 
 	rapidxml::xml_node<>* root = doc.first_node(textType.c_str());
 
-	if (!root) {
-		Logger::Error("missing first node type");
+	std::filesystem::path imagePath;
+
+	if (auto* fileAttr = root->first_attribute("file"))
+	{
+		imagePath = path.parent_path() / fileAttr->value();
+	}
+	else
+	{
+		for (const char* ext : { ".png", ".jpg", ".jpeg", ".bmp", ".tga" })
+		{
+			std::filesystem::path candidate = path;
+			candidate.replace_extension(ext);
+
+			if (std::filesystem::is_regular_file(candidate))
+			{
+				imagePath = candidate;
+				break;
+			}
+		}
+	}
+
+	if (imagePath.empty() || !std::filesystem::is_regular_file(imagePath)) {
+		Logger::Error("Texture image file not found next to the XML");
 		return false;
 	}
 
-	for (rapidxml::xml_node<>* node = root->first_node(textType.c_str());
+	/*const std::filesystem::path imagePath = path.parent_path() / fileAttr->value();
+
+	if (!std::filesystem::is_regular_file(imagePath))
+	{
+		Logger::Error("Texture image file does not exist");
+		return false;
+	}*/
+
+	auto readInt = [](rapidxml::xml_node<>* parent, const char* tag, int& out) -> bool
+		{
+			auto* n = parent->first_node(tag);
+			if (!n) return false;
+			try { out = std::stoi(n->value()); }
+			catch (const std::exception&) { return false; }
+			return true;
+		};
+
+	auto readFloat = [](rapidxml::xml_node<>* parent, const char* tag, float& out) -> bool
+		{
+			auto* n = parent->first_node(tag);
+			if (!n) return false;
+			try { out = std::stof(n->value()); }
+			catch (const std::exception&) { return false; }
+			return true;
+		};
+
+	for (rapidxml::xml_node<>* node = root->first_node("Animation");
 		node;
-		node = node->next_sibling("texture")) {
-        auto* nameAttr = node->first_attribute("name");
-        auto* fileAttr = node->first_attribute("file");
+		node = node->next_sibling("Animation"))
+	{
+		auto* nameAttr = node->first_attribute("Name");
+		if (!nameAttr)
+		{
+			Logger::Error("Animation without a Name attribute");
+			return false;
+		}
 
-        auto* rect = node->first_node("rect");
+		TextureData data;
+		data.name = nameAttr->value();
+		data.file = imagePath;
 
-        if (!nameAttr || !fileAttr || !rect)
-        {
-            Logger::Error("Invalid texture metadata");
-            return false;
-        }
+		AnimationData& a = data.animData;
+		int reverted = 0;
 
-        auto* xAttr = rect->first_attribute("x");
-        auto* yAttr = rect->first_attribute("y");
-        auto* widthAttr = rect->first_attribute("width");
-        auto* heightAttr = rect->first_attribute("height");
+		if (!readInt(node, "X", a.StartX) ||
+			!readInt(node, "Y", a.StartY) ||
+			!readInt(node, "SizeX", a.SizeX) ||
+			!readInt(node, "SizeY", a.SizeY) ||
+			!readInt(node, "OffsetX", a.OffsetX) ||
+			!readInt(node, "OffsetY", a.OffsetY) ||
+			!readInt(node, "SpriteNum", a.AnimationSpriteCount) ||
+			!readInt(node, "SpritesOnLine", a.SpriteOnLine) ||
+			!readInt(node, "Reverted", reverted) ||
+			!readFloat(node, "TimeBetweenAnimation", a.TimeBetweenAnimationInS))
+		{
+			Logger::Error("Missing or invalid value in an Animation node");
+			return false;
+		}
 
-        if (!xAttr || !yAttr || !widthAttr || !heightAttr)
-        {
-            Logger::Error("Missing rectangle attributes");
-            return false;
-        }
+		a.IsReverted = (reverted != 0);
 
-        TextureData data;
-        data.name = nameAttr->value();
+		if (data.name.empty() || a.SizeX <= 0 || a.SizeY <= 0)
+		{
+			Logger::Error("Invalid texture metadata values");
+			return false;
+		}
 
-        data.file = path.parent_path() / fileAttr->value();
+		if (!data.Texture.loadFromFile(data.file))
+		{
+			Logger::Error("Failed to load texture image");
+			return false;
+		}
 
+		auto [it, inserted] = textures.emplace(data.name, std::move(data));
+		if (!inserted)
+		{
+			Logger::Error("Duplicate texture name");
+			return false;
+		}
 
-        try
-        {
-            AnimationData newAnimData;
-            newAnimData.StartX = std::stoi(xAttr->value());
-            newAnimData.StartY = std::stoi(yAttr->value());
-            newAnimData.SizeX = std::stoi(widthAttr->value());
-            newAnimData.SizeY = std::stoi(heightAttr->value());
-            data.animData = newAnimData;
-        }
-        catch (const std::exception&)
-        {
-            Logger::Error("Invalid rectangle values");
-            return false;
-        }
-
-        if (data.name.empty() ||
-            data.animData.SizeX <= 0 ||
-            data.animData.SizeY <= 0)
-        {
-            Logger::Error("Invalid texture metadata values");
-            return false;
-        }
-
-        if (!std::filesystem::is_regular_file(data.file))
-        {
-            Logger::Error("Texture image file does not exist");
-            return false;
-        }
-
-        if (!textures.emplace(data.name, std::move(data)).second)
-        {
-            Logger::Error("Duplicate texture name");
-            return false;
-        }
-
+		TextureData& stored = it->second;
+		stored.sprite.emplace(stored.Texture);
+		stored.sprite->setTextureRect(sf::IntRect(
+			{ stored.animData.StartX, stored.animData.StartY },
+			{ stored.animData.SizeX,  stored.animData.SizeY }));
 	}
 
-    return true;
+	if (textures.empty())
+	{
+		Logger::Error("No animation loaded from the metadata");
+		return false;
+	}
+
+	return true;
+
 }
 
 const TextureData& TextureMgr::GetTextureData(const std::string& name) const{

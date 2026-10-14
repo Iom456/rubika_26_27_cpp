@@ -2,6 +2,9 @@
 
 #include <SFML/Graphics/Texture.hpp>
 #include "DebugMgr.h"
+#include <optional>
+
+#include <SFML/Graphics/Sprite.hpp>
 
 #include <filesystem>
 #include <string>
@@ -39,6 +42,7 @@ struct TextureData
 	void Draw();
 
 	sf::Texture Texture;
+	std::optional<sf::Sprite> sprite;
 	std::string name;
 	std::filesystem::path file;
 
