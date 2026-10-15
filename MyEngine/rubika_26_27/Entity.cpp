@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-Entity::Entity(std::string friendlyName)
+Entity::Entity(std::string friendlyName) : Transform(*this)
 {
 	Name = friendlyName;
 }
