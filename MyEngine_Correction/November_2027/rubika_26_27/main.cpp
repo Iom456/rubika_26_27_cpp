@@ -13,6 +13,8 @@
 #include <RenderComponent.h>
 #include <SpriteDrawable.h>
 
+#include "InputMgr.h"
+
 int main()
 {
     gData.Init();
@@ -44,10 +46,19 @@ int main()
             headSprite->SetTexture(texturePath);
             headSprite->SetAnimation("Head_Down");
         }
+        
+        gData.InputMgr->GetAction("Up")->RegisterCallback("Go Up", []()
+        {
+            TransformComponent tc = entity->GetComponent<TransformComponent>();
+        }, entity);
+        
+
     }
+    
     gData.SceneMgr->SetActiveScene("Main");
     gData.SceneMgr->Start();
-
+    
+    
     sf::Clock clock;
     clock.restart();
 

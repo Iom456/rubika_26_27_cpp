@@ -2,6 +2,7 @@
 #include <vector>
 #include <InputAction.h>
 #include <map>
+#include <memory>
 
 class InputMgr 
 {
@@ -12,10 +13,10 @@ public:
     void Update();
     void Shut();
     
-    void AddAction(InputAction* action);
-    InputAction* GetAction(std::string name);
+    void AddAction(std::unique_ptr<InputAction> action);
+    InputAction* GetAction(const std::string& name);
     
 private:
-   std::unordered_map<std::string, InputAction*> actions;
+    std::unordered_map<std::string, std::unique_ptr<InputAction>> actions;
     
 };
