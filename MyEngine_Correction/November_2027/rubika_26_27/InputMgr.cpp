@@ -1,14 +1,15 @@
-﻿﻿#include "InputMgr.h"
+﻿#include "InputMgr.h"
 
 #include <iostream>
 #include <ostream>
 #include <SFML/Window/Keyboard.hpp>
 
+std::string jumpActionName = "Jump";
+InputAction jumpAction;
+
 
 void InputMgr::Init()
 {
-    std::string jumpActionName = "Jump";
-    InputAction jumpAction;
     jumpAction.SetActionName(jumpActionName);
     jumpAction.SetValue(-1);
     jumpAction.RegisterCallback("Debug", [](float a)
@@ -25,7 +26,10 @@ void InputMgr::Start()
 
 void InputMgr::Update()
 {
-    //GetAction("Jump")->SetValue(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space));
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+       GetAction(jumpActionName)->SetValue(1);
+    else 
+        GetAction(jumpActionName) -> SetValue(-1);
 }
 
 void InputMgr::Shut()
@@ -35,19 +39,13 @@ void InputMgr::Shut()
 
 void InputMgr::AddAction( InputAction* action)
 {
-    if (GetAction(action->GetName()) == nullptr)
-    {
-        actions.push_back(action);
-    }
+    actions[action->GetName()] = action;
 }
 
 
 InputAction* InputMgr::GetAction(std::string name)
 {
-    for (auto action : actions)
-    {
-        if (action->GetName() == name)
-            return action;
-    }
+    if (actions[name] != nullptr)
+        return actions[name];
     return nullptr;
 }

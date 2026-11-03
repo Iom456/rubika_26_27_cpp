@@ -12,7 +12,11 @@ void InputAction::SetActionName(const std::string& name)
 
 void InputAction::SetValue(float value)
 {
-    Value = value;
+    if (value != Value)
+    {
+        Value = value;
+        Callback();
+    }
 }
 
 void InputAction::RegisterCallback(const std::string& debugName, std::function<void(float)> callback, void* owner)

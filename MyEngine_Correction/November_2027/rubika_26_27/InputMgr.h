@@ -16,6 +16,6 @@ public:
     InputAction* GetAction(std::string name);
     
 private:
-    std::vector<InputAction*> actions;
+   std::unordered_map<std::string, InputAction*> actions;
     
 };
